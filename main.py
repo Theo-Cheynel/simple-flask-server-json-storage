@@ -1,4 +1,6 @@
 import json
+import pathlib
+import sqlite3
 
 from flask import Flask, request, redirect, url_for
 
@@ -8,6 +10,11 @@ app = Flask(
     static_url_path='',
     static_folder='./website/',
 )
+
+
+count = 0
+FILES = [p for p in pathlib.Path('./website/fbx/').iterdir() if p.is_file()]
+
 
 
 @app.route('/')
@@ -26,38 +33,48 @@ def status():
     return 'server running'
 
 
-@app.route('/data')
-def data():
+@app.route('/get_fbx')
+def get_fbx():
     """
-    A route to get the data. The data is stored in a JSON file
+    A route to get a new FBX
     """
-    with open('./database/data.json', mode='r') as json_file:
-        data = json_file.readlines()
+    global count
+    count = (count+1) % len(FILES)
+    
+    data = {'fbx' : str(FILES[count].name)}
 
     response = app.response_class(
-        response=data,
+            response=json.dumps(data),
         status=200,
         mimetype='application/json'
     )
     return response
 
 
-@app.route('/set_color', methods=['POST'])
-def set_color():
+@app.route('/get_all_prompts')
+def get_all_prompts():
     """
-    Sets the color in the data file (reads the JSON, modifies the color attribute, then writes the output to the JSON)
-
-    Args:
-        color (str) : hexadecimal string representing the color to set in the JSON file.
+    A route to get all of the registered prompts
     """
-    color = json.loads(request.data)['color']
+    CONN = sqlite3.connect("database/db.sqlite")
+    cur = CONN.cursor()
+    cur.execute("SELECT * FROM Prompts;")
+    rows = cur.fetchall()
+    CONN.close()
+    return rows
 
-    with open('./database/data.json', mode='r') as json_file:
-        data = json.load(json_file)
 
-    data['color'] = color
+@app.route('/set_prompt', methods=['POST'])
+def set_prompt():
+    """
+    Sets the prompt in the sqlite db
+    """
+    fbx = json.loads(request.data)['fbx']
+    prompt = json.loads(request.data)['prompt']
     
-    with open('./database/data.json', mode='w') as json_file:
-        json.dump(data, json_file, indent=0)
-
+    CONN = sqlite3.connect("database/db.sqlite")
+    cur = CONN.cursor()
+    cur.execute("INSERT INTO Prompts(Fbx, Prompt) VALUES (?, ?)", (fbx, prompt))
+    CONN.commit()
+    CONN.close()
     return 'ok'

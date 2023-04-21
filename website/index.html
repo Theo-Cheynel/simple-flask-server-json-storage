@@ -1,18 +1,32 @@
 <html>
 
   <head>
-    <title>Hello Wikiov</title>
+    <title>Kinetix Annotation Tool</title>
   </head>
-  
-  <script src="modify_color.js"></script>
+ 
+  <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.151.3/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.151.3/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module" src="threejs.js"></script>
+  <script src="connections.js"></script>
 
   <body bgcolor="#ffffff">
-    <h1> Choose the text color and reload the page to check for persistence !</h1>
-    <input type="color" id="colorpicker" value="#ffffff">
-    <button onClick="setColor()">Update</button>
+    <div style=''>
+      <h1> Annotate this animation and earn Marcel's eternal gratitude</h1>
+      <input style="width : calc(100% - 205px); margin-bottom: 10px; font-size: 14pt" type="text" id="text_input" placeholder="a person is walking like a zombie">
+      <button id="button" style="width: 200px; font-size: 14pt" onClick="setPrompt()">Validate</button>
+    </div>
   </body>
 
 
-</html>>
+</html>
 
  
